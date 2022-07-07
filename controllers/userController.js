@@ -34,17 +34,17 @@ module.exports.Signup = async (req,res,next)=>{
             names: names,
             email: email,
             password: hashedPassword
-        }).save()
+        })
 
+        if(!await newUser.save()) return res.status(500)
         const token = jwt.sign({
-            uniqueId: user.uniqueId,
-            names: user.names,
-            email: user.email,
+            uniqueId: newUser.uniqueId,
+            names: newUser.names,
+            email: newUser.email,
         },process.env.JWT_KEY,{expiresIn:'1d'});
 
-        if(newUser) return res.status(200).json({message:"User created successfully",status:true,token:token});
-        else return res.status(500)
-
+        return res.status(200).json({message:"User created successfully",status:true,token:token});
+        
     } catch (err) {
         
         return res.status(500)
@@ -61,10 +61,13 @@ module.exports.Login = async (req,res,next)=>{
 
         if(!email || !password) return res.status(400).json({message:"Incorrect email or password"});
 
-        const user  = userSchema.findOne({email: email,password:password});
+        const user  = await userSchema.findOne({email:email});
         if(!user) return res.status(400).json({message:"Incorrect email or password"});
 
-        //GENRETATE TOKEN
+        //Check if password is correct
+        const isMatch = await bcrypt.compare(password,user.password);
+        if(!isMatch) return res.status(400).json({message:"Incorrect email or password"});
+        
         const token = jwt.sign({
             uniqueId: user.uniqueId,
             names: user.names,
@@ -77,7 +80,7 @@ module.exports.Login = async (req,res,next)=>{
         
         
     } catch (err) {
-        return res.status(500)
+        next(err)
     }
 }
 

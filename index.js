@@ -3,6 +3,7 @@ const express = require('express')
 const e = require('express')
 const { usersRoute } = require('./routes/user')
 const mongoose = require('mongoose')
+const { tasksRouter } = require('./routes/task')
 
 const app = express()
 app.use(express.json())
@@ -13,5 +14,6 @@ mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedT
 })
 
 app.use('/api/auth',usersRoute)
+app.use('/api/task',tasksRouter)
 
 app.listen(4000, () => console.log('listening on port 4000'))

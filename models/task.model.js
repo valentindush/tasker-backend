@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
     owner: {
-        type: string,
+        type: String,
         required: true
     },
     type:{
-        type: string,
+        type: String,
         required: true
     },
     description: {
-        type: string,
+        type: String,
         required: true
     },
     completed: {
-        type: boolean,
+        type: Boolean,
         default: false
     },
     createdAt: {
