@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const { userSchema } = require('../models/user.model');
+const jwt = require('jsonwebtoken');
 module.exports.Signup = async (req,res,next)=>{
 
     try {
@@ -35,7 +36,13 @@ module.exports.Signup = async (req,res,next)=>{
             password: hashedPassword
         }).save()
 
-        if(newUser) return res.status(200).json({message:"User created successfully",status:true});
+        const token = jwt.sign({
+            uniqueId: user.uniqueId,
+            names: user.names,
+            email: user.email,
+        },process.env.JWT_KEY,{expiresIn:'1d'});
+
+        if(newUser) return res.status(200).json({message:"User created successfully",status:true,token:token});
         else return res.status(500)
 
     } catch (err) {
@@ -48,7 +55,36 @@ module.exports.Login = async (req,res,next)=>{
 
     try {
 
+        const {email,password} = req.body;
+
+        //Validations
+
+        if(!email || !password) return res.status(400).json({message:"Incorrect email or password"});
+
+        const user  = userSchema.findOne({email: email,password:password});
+        if(!user) return res.status(400).json({message:"Incorrect email or password"});
+
+        //GENRETATE TOKEN
+        const token = jwt.sign({
+            uniqueId: user.uniqueId,
+            names: user.names,
+            email: user.email,
+        },process.env.JWT_KEY,{expiresIn:'1d'});
+
+        if(user) return res.status(200).json({message:"User logged in successfully",status:true,token:token});
+        else return res.status(500)
+
         
+        
+    } catch (err) {
+        return res.status(500)
+    }
+}
+
+module.exports.UpdateUser = async (req,res,next)=>{
+    try {
+
+        const {names,email,profileImg} = req.body;
         
     } catch (err) {
         return res.status(500)
