@@ -1,5 +1,6 @@
-
-
+const bcrypt = require('bcrypt');
+const uuid = require('uuid');
+const { userSchema } = require('../models/user.model');
 module.exports.Signup = async (req,res,next)=>{
 
     try {
@@ -20,10 +21,36 @@ module.exports.Signup = async (req,res,next)=>{
 
         //Check if email already exists
 
-    
-        
+        const user  = await userSchema.findOne({email: email});
+        if(user) return res.status(400).json({message:"Email already exists"});
+
+        //Hash password
+        const hashedPassword   = await bcrypt.hash(password,10);
+   
+        //Create user
+        const newUser = userSchema({
+            uniqueId: uuid.v4(), //generate unique id
+            names: names,
+            email: email,
+            password: hashedPassword
+        }).save()
+
+        if(newUser) return res.status(200).json({message:"User created successfully",status:true});
+        else return res.status(500)
+
     } catch (err) {
         
+        return res.status(500)
+    }
+}
+
+module.exports.Login = async (req,res,next)=>{
+
+    try {
+
+        
+        
+    } catch (err) {
         return res.status(500)
     }
 }
