@@ -85,6 +85,14 @@ module.exports.UpdateUser = async (req,res,next)=>{
     try {
 
         const {names,email,profileImg} = req.body;
+
+        //Validations
+
+        if(!names || !email || !profileImg) return res.status(400).json({message:"Please fill all the fields"});
+        //validate name
+        if(!names.match(/^[a-zA-Z ]{2,30}$/)) return res.status(400).json({message:"Name must be between 2 and 30 characters"});
+        //Validate email
+        
         
     } catch (err) {
         return res.status(500)
