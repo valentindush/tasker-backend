@@ -4,11 +4,11 @@ const { model } = require("mongoose");
 module.exports.AddTask = async (req,res,next)=>{
     try {
 
-        const {token,type,description,deadline,id} = req.body;
+        const {token,type,description,deadline} = req.body;
 
         //Validations
 
-        if(!token || !type || !id || !description || !deadline) return res.status(400).json({message: "all fields are required"});
+        if(!token || !type  || !description || !deadline) return res.status(400).json({message: "all fields are required"});
 
         //Verify token
 
@@ -40,11 +40,11 @@ module.exports.AddTask = async (req,res,next)=>{
 module.exports.UpdateTask = async (req,res,next)=>{
     try {
 
-        const {token,type,description,deadline,completed} = req.body;
+        const {token,type,description,deadline,completed,id} = req.body;
 
         //Validations
 
-        if(!token || !type || !description || !deadline || !completed) return res.status(400).json({message: "all fields are required"});
+        if(!token || !type || !id || !description || !deadline || !completed) return res.status(400).json({message: "all fields are required"});
         
         //Verify token
 
@@ -63,3 +63,39 @@ module.exports.UpdateTask = async (req,res,next)=>{
         next(err)
     }
 }
+
+module.exports.GetTasks  = async(req,res,next)=>{
+    try {
+
+        const {token} = req.body;
+        if(!token) return res.status(402).json({message: "Token is required"});
+
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        if(!decoded) return res.status(401).json({message: "Invalid token"});
+
+        const tasks = await taskSchema.find({owner: decoded.uniqueId});
+        if(!tasks) return res.status(404).json({message: "No tasks found"});
+        return res.json({tasks,status:false});
+
+        
+    } catch (err) {
+        next(err)
+    }
+}
+
+module.exports.getRecentlyAddedTasks = async(req,res,next)=>{
+    try {
+        const {token} = req.body
+        if(!token) return res.status(402).json({message: "Token is required"})
+        const decoded = jwt.verify(token, process.env.JWT_KEY)
+        if(!decoded) return res.status(401).json({message: "Invalid token"})
+        const tasks = await taskSchema.find({owner: decoded.uniqueId}).sort({_id: -1}).limit(8)
+        if(!tasks) return res.status(404).json({message: "No tasks found"})
+
+        return res.json({tasks,status:true})
+        
+    } catch (err) {
+        next(err)
+    }
+}
+
