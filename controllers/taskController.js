@@ -99,3 +99,22 @@ module.exports.getRecentlyAddedTasks = async(req,res,next)=>{
     }
 }
 
+module.exports.deleteTask = async(req,res,next)=>{
+
+    try{
+
+        const {token,id} = req.body;
+        if(!token || !id) return res.status(400).json({message: "all fields are required"});
+        if(!token) return res.status(402).json({message: "Token is required"});
+
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        if(!decoded) return res.status(401).json({message: "Invalid token"});
+
+        const task = await taskSchema.findOneAndDelete({_id: id});
+        if(!task) return res.status(404).json({message: "Task not found"});
+        return res.json({message: "Task deleted successfully", status:true});
+
+    }catch(err){
+        next(err)
+    }
+}
