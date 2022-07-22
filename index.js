@@ -4,13 +4,19 @@ const e = require('express')
 const { usersRoute } = require('./routes/user')
 const mongoose = require('mongoose')
 const { tasksRouter } = require('./routes/task')
+const cors = require('cors')
+const bodyParser  = require('body-parser')
 
 const app = express()
+app.use(cors())
 app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: false }))
 
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
-    console.log('Connected to MongoDB')
+mongoose.connect(process.env.DB_CONNECTION)
+.then((e)=>{
+    console.log("connected to db")
+}).catch((err)=>{
+    console.log(err)
 })
 
 app.use('/api/auth',usersRoute)

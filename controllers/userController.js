@@ -23,7 +23,7 @@ module.exports.Signup = async (req,res,next)=>{
         //Check if email already exists
 
         const user  = await userSchema.findOne({email: email});
-        if(user) return res.status(400).json({message:"Email already exists"});
+        if(user) return res.status(400).json({message:"Someone else is using this email"});
 
         //Hash password
         const hashedPassword   = await bcrypt.hash(password,10);

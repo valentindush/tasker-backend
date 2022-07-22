@@ -28,7 +28,7 @@ module.exports.AddTask = async (req,res,next)=>{
         //Save task
         //Return task
 
-       if(await task.save()) res.status(201).json({message: "Task created successfully"});
+       if(await task.save()) res.status(201).json({message: "Task created successfully",status:true});
          else res.status(500).json({message: "Error creating task"});
 
         
@@ -67,7 +67,7 @@ module.exports.UpdateTask = async (req,res,next)=>{
 module.exports.GetTasks  = async(req,res,next)=>{
     try {
 
-        const {token} = req.body;
+        const token = req.headers.authorization.split(' ')[1]
         if(!token) return res.status(402).json({message: "Token is required"});
 
         const decoded = jwt.verify(token, process.env.JWT_KEY);
@@ -115,6 +115,27 @@ module.exports.deleteTask = async(req,res,next)=>{
         return res.json({message: "Task deleted successfully", status:true});
 
     }catch(err){
+        next(err)
+    }
+}
+
+module.exports.searchTask = async (req,res,next)=>{
+    try {
+
+        
+        const bearerToken = req.headers.authorization
+        const token = bearerToken.split(' ')[1]
+
+        if(!token) return res.status(402)
+
+        const decoded = jwt.verify(token,process.env.JWT_KEY)
+
+        if(!decoded) return res.status(402).json({message: "invalid token"})
+
+
+        const tasks = taskSchema.find({})
+        
+    } catch (err) {
         next(err)
     }
 }
