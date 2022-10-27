@@ -3,20 +3,11 @@ const jwt = require("jsonwebtoken");
 const { model } = require("mongoose");
 module.exports.AddTask = async (req,res,next)=>{
     try {
-
+        console.log("Creating task");
         const {token,type,description,deadline} = req.body;
-
-        //Validations
-
         if(!token || !type  || !description || !deadline) return res.status(400).json({message: "all fields are required"});
-
-        //Verify token
-
         const decoded = jwt.verify(token, process.env.JWT_KEY);
         if(!decoded) return res.status(401).json({message: "Invalid token"});
-
-        console.log(decoded);
-        //Create task
 
         const task =  taskSchema({
             owner: decoded.uniqueId,
@@ -40,12 +31,13 @@ module.exports.AddTask = async (req,res,next)=>{
 module.exports.UpdateTask = async (req,res,next)=>{
     try {
 
-        const {token,type,description,deadline,completed,id} = req.body;
+        const {type,description,deadline,completed,id} = req.body;
 
+        const token  = req.headers.authorization.split(" ")[1]
         //Validations
 
-        if(!token || !type || !id || !description || !deadline || !completed) return res.status(400).json({message: "all fields are required"});
-        
+        if(!token  || !type || !id || !description || !deadline || !completed) return res.status(400).json({message: "all fields are required"});
+
         //Verify token
 
         const decoded = jwt.verify(token, process.env.JWT_KEY);
@@ -103,7 +95,8 @@ module.exports.deleteTask = async(req,res,next)=>{
 
     try{
 
-        const {token,id} = req.body;
+        const id = req.params.id
+        const token = req.headers.authorization.split(" ")[1]
         if(!token || !id) return res.status(400).json({message: "all fields are required"});
         if(!token) return res.status(402).json({message: "Token is required"});
 
@@ -125,7 +118,7 @@ module.exports.searchTask = async (req,res,next)=>{
         
         const bearerToken = req.headers.authorization
         const token = bearerToken.split(' ')[1]
-
+        const searchString = req.params.searchString
         if(!token) return res.status(402)
 
         const decoded = jwt.verify(token,process.env.JWT_KEY)
@@ -133,9 +126,15 @@ module.exports.searchTask = async (req,res,next)=>{
         if(!decoded) return res.status(402).json({message: "invalid token"})
 
 
-        const tasks = taskSchema.find({})
+        try {
+            const tasks = taskSchema.find({owner: decoded._id, $text: {$search: searchString} })
+            return res.json({status:true, result: tasks})
+        } catch (err) {
+            return res.status(500)
+        }        
         
     } catch (err) {
         next(err)
     }
 }
+

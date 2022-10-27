@@ -12,14 +12,16 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
+app.use('/api/auth',usersRoute)
+app.use('/api/task',tasksRouter)
+
+
+
 mongoose.connect(process.env.DB_CONNECTION)
 .then((e)=>{
     console.log("connected to db")
 }).catch((err)=>{
-    console.log(err)
+    console.log("error connecting to db")
 })
-
-app.use('/api/auth',usersRoute)
-app.use('/api/task',tasksRouter)
-
 app.listen(4000, () => console.log('listening on port 4000'))
+
