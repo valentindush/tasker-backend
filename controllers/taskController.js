@@ -62,12 +62,18 @@ module.exports.GetTasks  = async(req,res,next)=>{
         const token = req.headers.authorization.split(' ')[1]
         if(!token) return res.status(402).json({message: "Token is required"});
 
-        const decoded = jwt.verify(token, process.env.JWT_KEY);
-        if(!decoded) return res.status(401).json({message: "Invalid token"});
+        const decoded = jwt.verify(token, process.env.JWT_KEY,(err,decoded)=>{
+            if(err) return res.status(401).json({message: "Invalid token"});
+            return decoded;
+        });
 
+       try {
         const tasks = await taskSchema.find({owner: decoded.uniqueId});
-        if(!tasks) return res.status(404).json({message: "No tasks found"});
         return res.json({tasks,status:false});
+       } catch (err) {
+        return res.status(500)
+       }
+       
 
         
     } catch (err) {
